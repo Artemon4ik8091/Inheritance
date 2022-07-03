@@ -13,7 +13,7 @@ public:
 	{
 		return last_name;
 	}
-	const std::string& get_fist_name()const
+	const std::string& get_first_name()const
 	{
 		return first_name;
 	}
@@ -44,11 +44,16 @@ public:
 	{
 		cout << "Hdestructor:\t" << this << endl;
 	}
-	void info()const
+	virtual void info()const
 	{
 		cout << last_name << " " << first_name << " " << age << " years\n";
 	}
 };
+
+std::ostream& operator<<(std::ostream& os, const Human& obj)
+{
+	return os << obj.get_last_name() << " " << obj.get_first_name() << " " << obj.get_age();
+}
 
 #define STUDENT_PARAMETERS		const std::string& specialty, const std::string& group, unsigned int year, float rating, float attendance
 #define STUDENT_ARGUMENTS		specialty, group, year, rating, attendance
@@ -120,10 +125,19 @@ public:
 		cout << specialty << " " << group << " " << year << " " << rating << " " << attendance << " " << endl;
 	}
 };
+std::ostream& operator<<(std::ostream& os, const Student& obj)
+{
+	return os << (Human&)obj << " "
+		<< obj.get_specialty() << " "
+		<< obj.get_group() << " "
+		<< obj.get_year() << " "
+		<< obj.get_rating() << " "
+		<< obj.get_attendance();
+}
 
 #define TEATCHER_PARAMETERS	const std::string& specialty, unsigned int experience
 #define TEATCHER_ARGUMENTS specialty, experience
-class Teather :public Human
+class Teacher :public Human
 {
 	std::string specialty;
 	unsigned int experience;
@@ -132,7 +146,7 @@ public:
 	{
 		return specialty;
 	}
-	unsigned int ge_experience()const
+	unsigned int get_experience()const
 	{
 		return experience;
 	}
@@ -144,13 +158,13 @@ public:
 	{
 		this->experience = experience;
 	}
-	Teather(HUMAN_PARAMETERS, TEATCHER_PARAMETERS) :Human(HUMAN_ARGUMENTS)
+	Teacher(HUMAN_PARAMETERS, TEATCHER_PARAMETERS) :Human(HUMAN_ARGUMENTS)
 	{
 		set_specialty(specialty);
 		set_experience(experience);
 		cout << "TConstructor:\t" << this << endl;
 	}
-	~Teather()
+	~Teacher()
 	{
 		cout << "TDestructor:\t" << this << endl;
 	}
@@ -160,6 +174,10 @@ public:
 		cout << specialty << " " << experience << endl;
 	}
 };
+std::ostream& operator<<(std::ostream& os, const Teacher& obj)
+{
+	return os << (Human&)obj << " " << obj.get_specialty() << " " << obj.get_experience();
+}
 class Graduate :public Student
 {
 	std::string subject;
@@ -189,6 +207,7 @@ public:
 };
 
 //#define INHERITANCE_CHECK
+
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -205,5 +224,34 @@ void main()
 	Graduate hank("Shrader", "Hank", 40, "Criminalistic", "WW_220", 5, 89, 80, "How to catch Heisenberg");
 	hank.info();
 #endif // INHERITANCE_CHECK
+
+	//Polymorphism (многоформенность: poly - много, morphis - форма).
+	//1. ”казатели на базовый класс - Generalisation;	
+	//2. ¬иртуальные метода - Specialisation;
+
+	//Generalisation:
+	Human* group[] =
+	{
+		//Upcast - преобразование к базовому типу:
+		new Student("Pinkman", "Jessie", 25, "Chemistry", "WW_220", 1, 70, 90),
+		new Teacher("White", "Walter", 50, "Chemistry", 25),
+		new Graduate("Schrader", "Hank", 40, "Criminalistic", "WW_220", 5, 89, 80, "How to catch Heisenberg"),
+		new Student("Vercetti", "Tomas", 30, "Criminal", "Vice", 2, 95, 98)
+	};
+	cout << "\n---------------------------------------------------\n";
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		//group[i]->info();
+		cout << typeid(*group[i]).name() << endl;
+		//cout << *group[i] << endl;
+		if (typeid(*group[i]) == typeid(Student))cout << *dynamic_cast<Student*>(group[i]) << endl;
+		if (typeid(*group[i]) == typeid(Teacher))cout << *dynamic_cast<Teacher*>(group[i]) << endl;
+		if (typeid(*group[i]) == typeid(Graduate))cout << *dynamic_cast<Graduate*>(group[i]) << endl;
+		cout << "\n---------------------------------------------------\n";
+	}
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		delete group[i];
+	}
 
 }

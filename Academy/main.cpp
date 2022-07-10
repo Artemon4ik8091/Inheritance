@@ -1,5 +1,21 @@
 #include<iostream>
+#include<fstream>
+#include<string>
 using namespace std;
+
+enum Defaults
+{
+	last_name_width=15,
+	first_name_width=10,
+	age_width=5,
+	speciality_width = 25,
+	group_width=8,
+	year_width=3,
+	rating_width=8,
+	atteadence_width=8,
+	type_width=15
+};
+
 
 #define HUMAN_PARAMETERS	const std::string& last_name, const std::string& first_name, unsigned int age
 #define HUMAN_ARGUMENTS		last_name, first_name, age
@@ -40,15 +56,61 @@ public:
 		set_age(age);
 		cout << "HConstructor:\t" << this << endl;
 	}
-	~Human()
+	virtual~Human()
 	{
 		cout << "Hdestructor:\t" << this << endl;
 	}
-	void info()const
+	virtual void info()const
 	{
 		cout << last_name << " " << first_name << " " << age << " years\n";
 	}
+	virtual std::ostream& print(std::ostream& os=cout)const
+	{
+		//return os << last_name << " " << first_name << " " << age;
+		os.width(Defaults::last_name_width);
+		os << std::left;
+		//os<<std::string(typeid(*this).name())+":";
+		//os.width(15);
+		os << last_name;
+		os.width(Defaults::first_name_width);
+		os << first_name;
+		os.width(Defaults::age_width);
+		os << age;
+		return os;
+	}
+	virtual std::ofstream& print(std::ofstream& ofs)const
+	{
+		ofs.width(Defaults::type_width);
+		ofs << std::left;
+		ofs << std::string(typeid(*this).name()) + ":";
+		ofs.width(Defaults::last_name_width);
+		ofs << last_name;
+		ofs.width(Defaults::first_name_width);
+		ofs << first_name;
+		ofs.width(Defaults::age_width);
+		ofs << age;
+		return ofs;
+	}
+	virtual std::ifstream& scan(std::ifstream& ifs)
+	{
+		ifs >> last_name >> first_name >> age;
+		return ifs;
+	}
 };
+std::ostream& operator<<(std::ostream& os, const Human& obj)
+{
+	return obj.print(os);
+}
+std::ofstream& operator<<(std::ofstream& ofs, const Human& obj)
+{
+	obj.print(ofs);
+	return ofs;
+}
+std::ifstream& operator>>(std::ifstream& ifs, Human& obj)
+{
+	obj.scan(ifs);
+	return ifs;
+}
 
 #define STUDENT_PARAMETERS		const std::string& specialty, const std::string& group, unsigned int year, float rating, float attendance
 #define STUDENT_ARGUMENTS		specialty, group, year, rating, attendance
@@ -119,6 +181,57 @@ public:
 		Human::info();
 		cout << specialty << " " << group << " " << year << " " << rating << " " << attendance << " " << endl;
 	}
+	std::ostream& print(std::ostream& os)const
+	{
+		/*return Human::print(os) << " "
+			<< specialty << " "
+			<< group << " "
+			<< year << " "
+			<< rating << " "
+			<< attendance;*/
+		Human::print(os);
+		os.width(Defaults::speciality_width);
+		os << specialty;
+		os.width(Defaults::group_width);
+		os << group;
+		os.width(Defaults::year_width);
+		os << year;
+		os.width(Defaults::rating_width);
+		os << rating;
+		os.width(Defaults::atteadence_width);
+		os << attendance;
+		return os;
+	}
+	virtual std::ofstream& print(std::ofstream& ofs)const
+	{
+		Human::print(ofs);
+		ofs.width(Defaults::speciality_width);
+		ofs << specialty;
+		ofs.width(Defaults::group_width);
+		ofs << group;
+		ofs.width(Defaults::year_width);
+		ofs << year;
+		ofs.width(Defaults::rating_width);
+		ofs << rating;
+		ofs.width(Defaults::atteadence_width);
+		ofs << attendance;
+		return ofs;
+	}
+	std::ifstream& scan(std::ifstream& ifs)
+	{
+		Human::scan(ifs);
+		char specialty[Defaults::speciality_width] = {};
+		ifs.read(specialty, Defaults::speciality_width);
+		for (int i = Defaults::speciality_width - 1; specialty[i] == ' '; i--)
+			specialty[i] = 0;
+		this->specialty = specialty;
+		ifs >> group;
+		ifs >> year;
+		ifs >> rating;
+		ifs >> attendance;
+		return ifs;
+
+	}
 };
 
 #define TEATCHER_PARAMETERS	const std::string& specialty, unsigned int experience
@@ -159,6 +272,36 @@ public:
 		Human::info();
 		cout << specialty << " " << experience << endl;
 	}
+	std::ostream& print(std::ostream& os)const
+	{
+		//return Human::print(os) << " " << specialty << " " << experience;
+		Human::print(os);
+		os.width(25);
+		os << specialty;
+		os.width(5);
+		os << experience;
+		return os;
+	}
+	virtual std::ofstream& print(std::ofstream& ofs)const
+	{
+		Human::print(ofs);
+		ofs.width(25);
+		ofs << specialty;
+		ofs.width(5);
+		ofs << experience;
+		return ofs;
+	}
+	std::ifstream& scan(std::ifstream& ifs)
+	{
+		Human::scan(ifs);
+		char specialty[Defaults::speciality_width] = {};
+		ifs.read(specialty, Defaults::speciality_width);
+		for (int i = Defaults::speciality_width - 1; specialty[i] == ' '; i--)
+			specialty[i] = 0;
+		this->specialty = specialty;
+		ifs >> experience;
+		return ifs;
+	}
 };
 class Graduate :public Student
 {
@@ -186,9 +329,34 @@ public:
 		Student::info();
 		cout << " " << subject << endl;
 	}
+	std::ostream& print(std::ostream& os)const
+	{
+		return Student::print(os) << " " << subject;
+	}
+	virtual std::ofstream& print(std::ofstream& ofs)const
+	{
+		Student::print(ofs) << " " << subject;
+		return ofs;
+	}
+	std::ifstream& scan(std::ifstream& ifs)
+	{
+		Student::scan(ifs);
+		std::getline(ifs, subject);
+		return ifs;
+	}
 };
 
+Human** load(const char filename[],int& n);
+Human* HumanFactory(const std::string type)
+{
+	if (type.find("class Student") != std::string::npos)return new Student("", "", 0, "", "", 0, 0, 0);
+	if (type.find("class Teather") != std::string::npos)return new Teather("", "", 0, "", 0);
+	if (type.find("class Graduate") != std::string::npos)return new Graduate("", "", 0, "", "", 0, 0, 0, "");
+	return nullptr;
+}
+
 //#define INHERITANCE_CHECK
+//#define POLIMORFISM_CHECK
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -205,5 +373,79 @@ void main()
 	Graduate hank("Shrader", "Hank", 40, "Criminalistic", "WW_220", 5, 89, 80, "How to catch Heisenberg");
 	hank.info();
 #endif // INHERITANCE_CHECK
+#ifdef POLIMORFISM_CHECK
+	//Polymorphism (многоформенность: poly - много, morphis - форма).
+//1. ”казатели на базовый класс - Generalisation;	
+//2. ¬иртуальные метода - Specialisation;
 
+//Generalisation:
+	Human* group[] =
+	{
+		//Upcast - преобразование к базовому типу:
+		new Student("Pinkman", "Jessie", 25, "Chemistry", "WW_220", 1, 70, 90),
+		new Teather("White", "Walter", 50, "Chemistry", 25),
+		new Graduate("Schrader", "Hank", 40, "Criminalistic", "WW_220", 5, 89, 80, "How to catch Heisenberg"),
+		new Student("Vercetti", "Tomas", 30, "Criminal", "Vice", 2, 95, 98),
+		new Teather("Diaz", "Ricardo",50,"Weapons distribution",20)
+	};
+	cout << "\n---------------------------------------------------\n";
+	std::ofstream fout("Academy.txt");
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		//group[i]->info();
+		cout << *group[i] << endl;
+		fout << *group[i] << endl;
+		//cout << *group[i] << endl;
+		cout << "\n---------------------------------------------------\n";
+	}
+	fout.close();
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		delete group[i];
+	}
+	system("start Notepad.exe Academy.txt");
+#endif // POLIMORFISM_CHECK
+
+	int n = 0;
+	Human** group = load("Academy.txt", n);
+	for (int i = 0; i < n; i++)
+	{
+		cout << *group[i] << endl;
+	}
+	for (int i = 0; i < n; i++)
+	{
+		delete group[i];
+	}
+	delete[] group;
+}
+Human** load(const char filename[],int& n)
+{
+	Human** group = nullptr;
+	std::ifstream fin(filename);
+	if (fin.is_open())
+	{
+		std::string buffer;
+		n = 0;
+		for(;!fin.eof();n++)std::getline(fin, buffer);
+		n--;
+		group = new Human*[n]{};
+		std::cout << fin.tellg() << endl;
+		fin.clear();
+		fin.seekg(0);
+		std::cout << fin.tellg() << endl;
+		
+		for (int i = 0; i < n; i++)
+		{
+			std::getline(fin, buffer, ':');
+			group[i] = HumanFactory(buffer);
+			if (group[i])fin >> *group[i];
+		}
+
+		fin.close();
+	}
+	else
+	{
+		std::cerr << "Error: file not found" << endl;
+	}
+	return group;
 }
